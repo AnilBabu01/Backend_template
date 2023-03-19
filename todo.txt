@@ -1,0 +1,18 @@
+-Create Auth api
+    -create register api with name, email, Whatsapp number,password;
+        -send varification link to the usermail id
+    -create login api with email & password
+
+-Give user option to add intagram account
+    -insta_usernamer
+    -insta_password
+
+-Now Then user will See all the plans on the dashboard 
+    When user add any account he will get 20 Free Genuine followers on instagram
+    Plans:
+        -20 followers in 10Rs
+        -100 to 120 Followers in 50Rs
+        -200 to 220 Followers in 100Rs
+        -500 to 520 Followers in 200Rs
+        -1000 to 1020 Followers in 500Rs
+
