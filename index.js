@@ -5,7 +5,6 @@ var cors = require("cors");
 const db = require("./Helper/Connect");
 
 const User = require("./Routes/User");
-const Admin = require("./Routes/Admin");
 const Payment = require("./Routes/Payment");
 // to run migrations run command - --------  npm run migrate ---------------------
 
@@ -23,7 +22,6 @@ app.get("/docs", (req, res) => {
 
 app.use("/payment", Payment);
 app.use("/api", User);
-app.use("/admin", Admin);
 
 app.use("*", (req, res) => {
   return res.status(404).json({

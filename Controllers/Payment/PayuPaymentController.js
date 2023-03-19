@@ -6,6 +6,7 @@ const Transaction = require("../../Models/transaction.model");
 const Order = require("../../Models/order.model");
 const SellOrder = require("../../Models/sellorder.model");
 config();
+
 const {
   OrderStep,
   SellOrderStep,
@@ -77,7 +78,7 @@ const PayuWebHookSuccessResponse = async (req, res) => {
     let transaction = await Transaction.findOne({
       where: {
         transactionId: merchantTransactionId,
-        status : PaymentStatus.PENDING
+        status: PaymentStatus.PENDING,
       },
     });
     if (!transaction) {
@@ -121,82 +122,82 @@ const PayuWebHookSuccessResponse = async (req, res) => {
 };
 
 const PayuWebHookRefundResponse = async (req, res) => {
-    try {
-      let ip = req.socket.remoteAddress;
-      console.log("=-=-=-=-=ip-=-=-", ip);
-      if (!allowedIPs.includes(ip)) {
-        return respHandler.error(res, {
-          msg: "You don't have access to this route!!",
-          status: false,
-        });
-      }
-      let {
-        customerName,
-        paymentMode,
-        hash,
-        status,
-        error_Message,
-        paymentId,
-        productInfo,
-        customerEmail,
-        merchantTransactionId,
-        amount,
-      } = req.body;
-      let hashingValues = `${MERCHANT_SALT}|${status}|||||||||||${customerEmail}|${customerName}|${productInfo}|${amount}|${merchantTransactionId}|${MERCHANT_KEY}`;
-      let newHash = sha512.sha512(hashingValues);
-      if (hash != newHash) {
-        return respHandler.error(res, {
-          msg: "Hash value mismatched!!",
-          status: false,
-        });
-      }
-      let transaction = await Transaction.findOne({
-        where: {
-          transactionId: merchantTransactionId,
-          status : PaymentStatus.ACCEPTED
-        },
-      });
-      if (!transaction) {
-        return respHandler.error(res, {
-          msg: "No pending transaction found!!",
-          status: false,
-        });
-      }
-      let order = {};
-      if (transaction.type == "promotion") {
-        order = await Order.findOne({
-          where: {
-            orderId: transaction.orderId,
-          },
-        });
-        order.proposal = ProposalStatus.IGNORE;
-      } else {
-        order = await SellOrder.findOne({
-          where: {
-            orderId: transaction.orderId,
-          },
-        });
-        order.orderStep = SellOrderStep.Billing;
-      }
-      await order.save();
-      transaction.status = PaymentStatus.REFUND;
-      transaction.payuId = paymentId;
-      await transaction.save();
-      console.log(req.body);
-      return respHandler.success(res, {
-        msg: "Transaction status changed successfully!!",
-      });
-    } catch (err) {
+  try {
+    let ip = req.socket.remoteAddress;
+    console.log("=-=-=-=-=ip-=-=-", ip);
+    if (!allowedIPs.includes(ip)) {
       return respHandler.error(res, {
-        msg: "Something went wrong!!",
+        msg: "You don't have access to this route!!",
         status: false,
-        error: [err.message],
       });
     }
-  };
+    let {
+      customerName,
+      paymentMode,
+      hash,
+      status,
+      error_Message,
+      paymentId,
+      productInfo,
+      customerEmail,
+      merchantTransactionId,
+      amount,
+    } = req.body;
+    let hashingValues = `${MERCHANT_SALT}|${status}|||||||||||${customerEmail}|${customerName}|${productInfo}|${amount}|${merchantTransactionId}|${MERCHANT_KEY}`;
+    let newHash = sha512.sha512(hashingValues);
+    if (hash != newHash) {
+      return respHandler.error(res, {
+        msg: "Hash value mismatched!!",
+        status: false,
+      });
+    }
+    let transaction = await Transaction.findOne({
+      where: {
+        transactionId: merchantTransactionId,
+        status: PaymentStatus.ACCEPTED,
+      },
+    });
+    if (!transaction) {
+      return respHandler.error(res, {
+        msg: "No pending transaction found!!",
+        status: false,
+      });
+    }
+    let order = {};
+    if (transaction.type == "promotion") {
+      order = await Order.findOne({
+        where: {
+          orderId: transaction.orderId,
+        },
+      });
+      order.proposal = ProposalStatus.IGNORE;
+    } else {
+      order = await SellOrder.findOne({
+        where: {
+          orderId: transaction.orderId,
+        },
+      });
+      order.orderStep = SellOrderStep.Billing;
+    }
+    await order.save();
+    transaction.status = PaymentStatus.REFUND;
+    transaction.payuId = paymentId;
+    await transaction.save();
+    console.log(req.body);
+    return respHandler.success(res, {
+      msg: "Transaction status changed successfully!!",
+    });
+  } catch (err) {
+    return respHandler.error(res, {
+      msg: "Something went wrong!!",
+      status: false,
+      error: [err.message],
+    });
+  }
+};
 
 module.exports = {
   CreateOrder,
   PayuWebHookSuccessResponse,
-  PayuWebHookRefundResponse
+  PayuWebHookRefundResponse,
 };

@@ -7,8 +7,7 @@ const nodemailer = require("nodemailer");
 var cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const hbs = require("nodemailer-express-handlebars");
-const Page = require("../Models/page.model");
-const PageDetail = require("../Models/pagedetail.model");
+
 config();
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUDNAME;
 const API_KEY = process.env.CLOUDINARY_APIKEY;
@@ -99,48 +98,7 @@ const sendEmail = async (data) => {
   });
 };
 
-const profileCompletePercentage = async (pageId,pageDetail)=>{
-  let array = ["accountName","userName","intrest","ageOfAudience","postUrl","targetLocation","insightImage","pageNiche","profileImage","coverImage","tagline","description","shortDescription","tags","mostLikedImage"];
-  let eachColumnPercent = (100 / 19).toFixed(2);
-  let data = await Page.findOne({
-    where: { id:pageId },
-    attributes: [
-      "id",
-      "userId",
-      "accountName",
-      "userName",
-      "intrest",
-      "ageOfAudience",
-      "postUrl",
-      "profileUrl",
-      "targetLocation",
-      "pageNiche",
-      "insightImage",
-      "profileImage",
-    ],
-    include: [
-      {
-        model: PageDetail
-      },
-    ],
-  });
-  let percentage = 0;
-  for (let index = 0; index < array.length; index++) {
-    if(((data[array[index]] || pageDetail[array[index]]) || (data.pagedetail[array[index]] || pageDetail.pagedetail[array[index]])) && array[index] != "mostLikedImage"){
-      percentage +=1;
-    }
-    if(array[index] == "mostLikedImage" && (data.pagedetail?.mostLikedImage || pageDetail.pagedetail?.mostLikedImage)){
-      percentage += !pageDetail.pagedetail?.mostLikedImage  ? data.pagedetail?.mostLikedImage.length : JSON.parse(pageDetail.pagedetail?.mostLikedImage).length;
-    } 
-  }
-  console.log("profile Percentage ===========>",Math.ceil(percentage * eachColumnPercent));
-  console.log("data ===========>",data.dataValues); 
-  console.log("pageDetail ===========>",pageDetail);
-  return Math.ceil(percentage * eachColumnPercent);
-}
-
 module.exports = {
   uploadFile,
   sendEmail,
-  profileCompletePercentage
 };

@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../Helper/Connect");
-const Page = require("./page.model");
+
 const User = sequelize.define("users", {
   id: {
     type: DataTypes.INTEGER,
@@ -39,6 +39,5 @@ const User = sequelize.define("users", {
     defaultValue: 0,
   },
 });
-User.hasMany(Page, { foreignKey: "userId" });
-Page.belongsTo(User, { foreignKey: "userId" });
+
 module.exports = User;
